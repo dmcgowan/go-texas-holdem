@@ -2,7 +2,6 @@ package holdem
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"sort"
 	"strings"
@@ -52,9 +51,9 @@ func (round *Round) String() string {
 	return strings.Join(buffer, "\n")
 }
 
-func NewRound(playerCount int8) *Round {
+func NewRound(playerCount int8) (*Round, error) {
 	if playerCount > 22 {
-		log.Panicf("Too many players in a round: %d", playerCount)
+		return nil, fmt.Errorf("Too many players in a round: %d", playerCount)
 	}
 	shuffle := rand.Perm(len(Deck))
 	round := &Round{
@@ -72,7 +71,7 @@ func NewRound(playerCount int8) *Round {
 			round.Turn, round.River,
 		})
 	}
-	return round
+	return round, nil
 }
 
 func handValue(handType HandType, sortedValues [5]int) HandValue {
