@@ -34,14 +34,14 @@ type Hand struct {
 
 type Round struct {
 	Hands []Hand
-	Draw [3]Card
+	Flop [3]Card
 	Turn Card
 	River Card
 }
 
 func (round *Round) String() string {
 	var buffer []string = make([]string, len(round.Hands) + 3)
-	buffer[0] = fmt.Sprintf("Draw:  %s %s %s", round.Draw[0], round.Draw[1], round.Draw[2])
+	buffer[0] = fmt.Sprintf("Draw:  %s %s %s", round.Flop[0], round.Flop[1], round.Flop[2])
 	buffer[1] = fmt.Sprintf("Turn:  %s", round.Turn)
 	buffer[2] = fmt.Sprintf("River: %s", round.River)
 	for i, hand := range round.Hands {
@@ -58,7 +58,7 @@ func NewRound(playerCount int8) (*Round, error) {
 	shuffle := rand.Perm(len(Deck))
 	round := &Round{
 		Hands: make([]Hand, playerCount),
-		Draw: [3]Card{Deck[shuffle[0]], Deck[shuffle[1]], Deck[shuffle[2]]},
+		Flop: [3]Card{Deck[shuffle[0]], Deck[shuffle[1]], Deck[shuffle[2]]},
 		Turn: Deck[shuffle[3]],
 		River: Deck[shuffle[4]],
 	}
@@ -67,7 +67,7 @@ func NewRound(playerCount int8) (*Round, error) {
 		round.Hands[i].Cards = hand
 		round.Hands[i].Score, round.Hands[i].HighHand =  HighestHandValue([7]Card{
 			hand[0], hand[1],
-			round.Draw[0], round.Draw[1], round.Draw[2],
+			round.Flop[0], round.Flop[1], round.Flop[2],
 			round.Turn, round.River,
 		})
 	}
