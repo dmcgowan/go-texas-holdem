@@ -156,7 +156,8 @@ func CalculateHandValue(hand [5]Card) HandValue {
 	return handValue(HighCard, cardValues)
 }
 
-var HandCombinations = [21][5]int8 {                                    	[5]int8{1,2,3,4,5},
+var HandCombinations = [21][5]int8 {
+	[5]int8{1,2,3,4,5},
 	[5]int8{1,2,3,4,6},
 	[5]int8{1,2,3,4,7},
 	[5]int8{1,2,3,5,6},
