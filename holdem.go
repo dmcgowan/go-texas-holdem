@@ -55,6 +55,9 @@ func NewRound(playerCount int8) (*Round, error) {
 	if playerCount > 22 {
 		return nil, fmt.Errorf("Too many players in a round: %d", playerCount)
 	}
+	if playerCount < 2 {
+		return nil, fmt.Errorf("Too few players in a round: %d", playerCount)
+	}
 	shuffle := rand.Perm(len(Deck))
 	round := &Round{
 		Hands: make([]Hand, playerCount),
