@@ -13,7 +13,7 @@ func init() {
 }
 
 type HandType uint8
-type HandValue uint32
+type HandValue int
 
 const HighCard = HandType(0x00)
 const OnePair = HandType(0x01)
@@ -102,11 +102,13 @@ func CalculateHandValue(hand [5]Card) HandValue {
 		int(hand[3] >> 4),
 		int(hand[4] >> 4),
 	}
-	sort.Ints(cardValues[:])
-
+ 
+	cardValuesSlice := sort.IntSlice(cardValues[:])
+	cardValuesSlice.Sort()
+	
 	if cardValues[1] == cardValues[0] + 1 && cardValues[2] == cardValues[1] + 1 && cardValues[3] == cardValues[2] + 1 {
 		straight := false
-		if cardValues[4] == cardValues[3] + 1 {
+   		if cardValues[4] == cardValues[3] + 1 {
 			straight = true
 		} else if cardValues[4] == 0x0E && cardValues[0] == 0x02 { //Low wheel
 			cardValues = [5]int{0x01, 0x02, 0x03, 0x04, 0x05}
@@ -125,34 +127,66 @@ func CalculateHandValue(hand [5]Card) HandValue {
 
 	// Check for Quads
 	if cardValues[1] == cardValues[2] && cardValues[1] == cardValues[3] {
-		if cardValues[0] == cardValues[1] || cardValues[3] == cardValues[4] {
+	
+		if cardValues[0] == cardValues[1] {
+		 	return handValue(Quads, cardValues)
+			cardValuesSlice.Swap(0, 4)
+		} else if cardValues[3] == cardValues[4] {
 			return handValue(Quads, cardValues)
 		} else {
+			cardValuesSlice.Swap(1, 4)
 			return handValue(Trips, cardValues)
 		}
+	
 	}
 
 	// Check for Full House
 	if cardValues[0] == cardValues[1] && cardValues[3] == cardValues[4] {
-		if cardValues[1] == cardValues[2] || cardValues[2] == cardValues[3] {
+		if cardValues[1] == cardValues[2] {
+			cardValuesSlice.Swap(0, 4)
+			cardValuesSlice.Swap(1, 3)		
 			return handValue(FullHouse, cardValues)
-		} else {
+		} else if cardValues[2] == cardValues[3] {
+			return handValue(FullHouse, cardValues)
+		} else {		
+			// Swaping the middle card for the last card. Moves the two pairs in front for ranking.
+			cardValuesSlice.Swap(2, 0)
 			return handValue(TwoPair, cardValues)
 		}
 	}
 
 	// Check for Trips (middle trip already covered in Quad check)
-	if (cardValues[0] == cardValues[1] && cardValues[1] == cardValues[2]) || (cardValues[2] == cardValues[3] && cardValues[3] == cardValues[4]) {
+	if (cardValues[0] == cardValues[1] && cardValues[1] == cardValues[2]) {
+		cardValuesSlice.Swap(0, 3)
+		cardValuesSlice.Swap(1, 4)
 		return handValue(Trips, cardValues)
+	} else if (cardValues[2] == cardValues[3] && cardValues[3] == cardValues[4]) {
+		return handValue(Trips, cardValues)	
 	}
 
 	// Check for Two Pair (0+1 + 3+4 already covered by full house check)
-	if (cardValues[0] == cardValues[1] && cardValues[2] == cardValues[3]) || (cardValues[1] == cardValues[2] && cardValues[3] == cardValues[4]) {
+	if (cardValues[0] == cardValues[1] && cardValues[2] == cardValues[3]) {
+		cardValuesSlice.Swap(2, 4)
+		cardValuesSlice.Swap(2, 0)
+		return handValue(TwoPair, cardValues)
+	} else if (cardValues[1] == cardValues[2] && cardValues[3] == cardValues[4]) {
 		return handValue(TwoPair, cardValues)
 	}
 
 	// Check for Pair
-	if cardValues[0] == cardValues[1] || cardValues[1] == cardValues[2] || cardValues[2] == cardValues[3] || cardValues[3] == cardValues[4] {
+	if cardValues[0] == cardValues[1] {
+		cardValuesSlice.Swap(2, 4)
+		cardValuesSlice.Swap(0, 4)
+		cardValuesSlice.Swap(1, 3)		
+		return handValue(OnePair, cardValues)
+	} else if cardValues[1] == cardValues[2] {
+		cardValuesSlice.Swap(2, 4)
+		cardValuesSlice.Swap(1, 3)
+		return handValue(OnePair, cardValues)
+	} else if cardValues[2] == cardValues[3] { 
+	 	cardValuesSlice.Swap(2, 4)
+	 	return handValue(OnePair, cardValues)
+	} else if cardValues[3] == cardValues[4] {
 		return handValue(OnePair, cardValues)
 	}
 
